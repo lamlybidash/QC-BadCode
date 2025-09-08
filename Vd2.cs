@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 // Tránh viết Console....
 using System.Console;
+
+//test
 public class BadSchoolProgram
 {
     List<Student> students = new List<Student>();
