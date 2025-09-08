@@ -9,6 +9,17 @@ using System.Collections.Generic;
 using System.Console;
 public class BadSchoolProgram
 {
+    List<Student> students = new List<Student>();
+    List<Teachers> teachers = new List<string>();
+    List<string> courses = new List<string>();
+    List<string> enrollments = new List<string>();
+    List<string> grades = new List<string>();
+
+    public static void Main(string[] args)
+    {
+        MainOptionF();
+    }
+
     const int QLSinhVien = 1;
     const int QLGiaoVien = 2;
     const int QLMonHoc =3;
@@ -21,8 +32,8 @@ public class BadSchoolProgram
     {
         MainOptionF();
 
-        List<string> students = new List<string>();
-        List<string> teachers = new List<string>();
+        List<Student> students = new List<Student>();
+        List<Teachers> teachers = new List<string>();
         List<string> courses = new List<string>();
         List<string> enrollments = new List<string>();
         List<string> grades = new List<string>();
@@ -182,7 +193,6 @@ public class BadSchoolProgram
 
     public static void MainOptionF()
     {
-        //Đổi tên biến dễ nhớ hơn
         int select = 0;
         while (select != Thoat)
         {
@@ -199,7 +209,6 @@ public class BadSchoolProgram
             SelectOption(select);
         }
     }
-
     public static void SelectMainOption(int option)
     {
         switch (option)
@@ -212,43 +221,54 @@ public class BadSchoolProgram
 
             case QLGiaoVien:
                 {
-                    //code
+                    QLGiaoVienF();
                     break;
                 }
 
             case QLMonHoc:
                 {
-                    //code
+                    QLMonHoc();
                     break;
                 }
             case QLDangKyHoc:
                 {
-                    //code
+                    QLDangKyHoc();
                     break;
                 }
             case QLDiem:
                 {
-                    //code
+                    QLDiem();
                     break;
                 }
             case BaoCaoTongHop:
                 {
-                    //code
+                    BaoCaoTongHop();
                     break;
                 }
             case Thoat:
                 {
-                    //code
-                    break;
-                }
-            default:
-                {
-
                     break;
                 }
         }
     }
-    
+
+
+
+
+
+
+
+
+
+    public const int StudentAdd = 1;
+    public const int StudentDel = 2;
+    public const int StudentUpdate = 3;
+    public const int StudentAll = 4;
+    public const int StudentFilterName = 5;
+    public const int StudentFilterGPA = 6;
+    public const int StudentSortName = 7;
+    public const int StudentSortGPA = 8;
+    public const int StudentBreak = 0;
     public void QLSinhVienF()
     {
         int smenu = 0;
@@ -268,8 +288,59 @@ public class BadSchoolProgram
             SelectQLSVOption(smenu);
         }
     }
-
     public static void SelectQLSVOption(int option)
+    {
+
+        switch (option)
+        {
+            case StudentAdd:
+                {
+                    AddSinhVienF();
+                    break;
+                }
+            case StudentDel:
+                {
+                    DelSinhVienF();
+                    break;
+                }
+            case StudentUpdate:
+                {
+                    UpdateSinhVienF();
+                    break;
+                }
+            case StudentAll:
+                {
+                    AllSinhVienF();
+                    break;
+                }
+            case StudentFilterGPA:
+                {
+                    FilterGPASinhVienF();
+                    break;
+                }
+            case StudentFilterName:
+                {
+                    FilterNameSinhVienF();
+                    break;
+                }
+            case StudentSortGPA:
+                {
+                    SortGPASinhVienF();
+                    break;
+                }
+            case StudentSortName:
+                {
+                    SortNameSinhVienF();
+                    break;
+                }
+            case StudentBreak:
+                {
+                    break;
+                }
+
+
+        }
+    }
 
     public void AddSinhVienF(Student student)
     {
@@ -287,4 +358,6 @@ public class BadSchoolProgram
 
         Students.Add(student);
     }
+    
+
 }
