@@ -6,6 +6,13 @@ import java.util.*;
 
 public class BadSchoolProgram {
     public static void main(String[] args) {
+        Final int QLSinhVien =1;
+        Final int QLGiaoVien =2;
+        Final int QLMonHoc =3;
+        Final int QLDangKyHoc =4;
+        Final int QLSDiem =5;
+        Final int BaoCaoTongHop =6;
+        Final int Thoat =99;
         Scanner sc = new Scanner(System.in);
 
         // Danh sách dữ liệu: lưu sinh viên, giáo viên, môn học, đăng ký, điểm...
@@ -27,6 +34,15 @@ public class BadSchoolProgram {
             System.out.println("99. Thoat");
             System.out.print("Nhap lua chon: ");
             menu = sc.nextInt(); sc.nextLine();
+
+            switch(menu)
+            {
+                case 1:
+                    {
+                        
+                        break;
+                    }
+            }
 
             if (menu == 1) {
                 // Quản lý sinh viên
