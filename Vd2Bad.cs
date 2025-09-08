@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 
+//Test
+
 public class BadSchoolProgram
 {
     public static void Main(string[] args)
@@ -162,7 +164,7 @@ public class BadSchoolProgram
                     }
                 }
             }
-            
+
             // Quản lý giáo viên, môn học, đăng ký, điểm, báo cáo 
             // (phần này em giữ nguyên cấu trúc như bản Java 10 trang)
             // copy-paste gần y nguyên, chỉ đổi cú pháp sang C#
