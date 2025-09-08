@@ -1,349 +1,444 @@
-// Chương trình quản lý trường học cực kỳ BAD CODE
-// Lưu ý: code này chỉ để sinh viên phân tích, KHÔNG nên dùng thật
-// Tất cả dữ liệu lưu trữ trong ArrayList<String> dạng "id|name|field1|field2|..."
-
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BadSchoolProgram {
+
+    // ======= Models =======
+    static class Student {
+        String id;
+        String name;
+        int age;
+        double gpa;
+
+        Student(String id, String name, int age, double gpa) {
+            this.id = id;
+            this.name = name;
+            this.age = age;
+            this.gpa = gpa;
+        }
+    }
+
+    static class Teacher {
+        String id;
+        String name;
+        String major;
+
+        Teacher(String id, String name, String major) {
+            this.id = id;
+            this.name = name;
+            this.major = major;
+        }
+    }
+
+    static class Course {
+        String id;
+        String name;
+        int credits;
+
+        Course(String id, String name, int credits) {
+            this.id = id;
+            this.name = name;
+            this.credits = credits;
+        }
+    }
+
+    static class Enrollment {
+        String studentId;
+        String courseId;
+
+        Enrollment(String studentId, String courseId) {
+            this.studentId = studentId;
+            this.courseId = courseId;
+        }
+    }
+
+    static class Grade {
+        String studentId;
+        String courseId;
+        double score;
+
+        Grade(String studentId, String courseId, double score) {
+            this.studentId = studentId;
+            this.courseId = courseId;
+            this.score = score;
+        }
+    }
+
+    // ======= Repositories (in-memory) =======
+    static class Repo {
+        Map<String, Student> students = new LinkedHashMap<>();
+        Map<String, Teacher> teachers = new LinkedHashMap<>();
+        Map<String, Course> courses = new LinkedHashMap<>();
+        // enrollments & grades có thể để List vì là quan hệ nhiều–nhiều
+        List<Enrollment> enrollments = new ArrayList<>();
+        List<Grade> grades = new ArrayList<>();
+    }
+
+    // ======= Menu =======
+    enum MainMenu {
+        STUDENTS(1), TEACHERS(2), COURSES(3), ENROLL(4), GRADES(5), REPORT(6), EXIT(99);
+        final int code;
+        MainMenu(int c) { this.code = c; }
+        static Optional<MainMenu> from(int c) {
+            return Arrays.stream(values()).filter(m -> m.code == c).findFirst();
+        }
+    }
+
+    // ======= IO Helpers =======
+    static class IO {
+        private final Scanner sc = new Scanner(System.in);
+
+        String readLine(String prompt) {
+            System.out.print(prompt);
+            return sc.nextLine().trim();
+        }
+
+        int readInt(String prompt) {
+            while (true) {
+                System.out.print(prompt);
+                String s = sc.nextLine().trim();
+                try { return Integer.parseInt(s); }
+                catch (NumberFormatException e) { System.out.println(">> Nhập số nguyên hợp lệ!"); }
+            }
+        }
+
+        double readDouble(String prompt) {
+            while (true) {
+                System.out.print(prompt);
+                String s = sc.nextLine().trim();
+                try { return Double.parseDouble(s); }
+                catch (NumberFormatException e) { System.out.println(">> Nhập số thực hợp lệ!"); }
+            }
+        }
+    }
+
+    // ======= App =======
     public static void main(String[] args) {
-        Final int QLSinhVien =1;
-        Final int QLGiaoVien =2;
-        Final int QLMonHoc =3;
-        Final int QLDangKyHoc =4;
-        Final int QLSDiem =5;
-        Final int BaoCaoTongHop =6;
-        Final int Thoat =99;
-        Scanner sc = new Scanner(System.in);
+        Repo repo = new Repo();
+        IO io = new IO();
 
-        // Danh sách dữ liệu: lưu sinh viên, giáo viên, môn học, đăng ký, điểm...
-        ArrayList<String> students = new ArrayList<String>();
-        ArrayList<String> teachers = new ArrayList<String>();
-        ArrayList<String> courses = new ArrayList<String>();
-        ArrayList<String> enrollments = new ArrayList<String>();
-        ArrayList<String> grades = new ArrayList<String>();
+        // seed nhẹ cho demo
+        repo.students.put("S1", new Student("S1","An",20,8.6));
+        repo.students.put("S2", new Student("S2","Bình",19,7.8));
+        repo.courses.put("C1", new Course("C1","CTDL",3));
+        repo.courses.put("C2", new Course("C2","LT HĐT",4));
 
-        int menu = 0;
-        while (menu != 99) {
-            System.out.println("============= MENU CHINH =============");
-            System.out.println("1. Quan ly Sinh vien");
-            System.out.println("2. Quan ly Giao vien");
-            System.out.println("3. Quan ly Mon hoc");
-            System.out.println("4. Quan ly Dang ky hoc");
-            System.out.println("5. Quan ly Diem");
-            System.out.println("6. Bao cao tong hop");
-            System.out.println("99. Thoat");
-            System.out.print("Nhap lua chon: ");
-            menu = sc.nextInt(); sc.nextLine();
+        while (true) {
+            System.out.println("\n============= MENU CHÍNH =============");
+            System.out.println("1. Quản lý Sinh viên");
+            System.out.println("2. Quản lý Giáo viên");
+            System.out.println("3. Quản lý Môn học");
+            System.out.println("4. Quản lý Đăng ký học");
+            System.out.println("5. Quản lý Điểm");
+            System.out.println("6. Báo cáo tổng hợp");
+            System.out.println("99. Thoát");
+            int choice = new IO().readInt("Nhập lựa chọn: ");
 
-            switch(menu)
-            {
-                case 1:
-                    {
-                        
+            Optional<MainMenu> menu = MainMenu.from(choice);
+            if (menu.isEmpty()) {
+                System.out.println(">> Lựa chọn không hợp lệ!");
+                continue;
+            }
+            if (menu.get() == MainMenu.EXIT) {
+                System.out.println("Tạm biệt!");
+                break;
+            }
+
+            switch (menu.get()) {
+                case STUDENTS -> studentMenu(repo, io);
+                case TEACHERS -> teacherMenu(repo, io);
+                case COURSES -> courseMenu(repo, io);
+                case ENROLL -> enrollmentMenu(repo, io);
+                case GRADES -> gradeMenu(repo, io);
+                case REPORT -> report(repo);
+                default -> System.out.println(">> Không hỗ trợ!");
+            }
+        }
+    }
+
+    // ======= Student Menu =======
+    static void studentMenu(Repo repo, IO io) {
+        while (true) {
+            System.out.println("\n--- QUẢN LÝ SINH VIÊN ---");
+            System.out.println("1. Thêm SV");
+            System.out.println("2. Xóa SV");
+            System.out.println("3. Cập nhật SV");
+            System.out.println("4. Hiển thị tất cả");
+            System.out.println("5. Tìm theo tên");
+            System.out.println("6. Lọc GPA > 8");
+            System.out.println("7. Sắp xếp theo tên");
+            System.out.println("8. Sắp xếp theo GPA (giảm dần)");
+            System.out.println("9. Quay lại");
+            int c = new IO().readInt("Chọn: ");
+            if (c == 9) return;
+
+            switch (c) {
+                case 1 -> {
+                    String id = io.readLine("ID: ");
+                    if (repo.students.containsKey(id)) { System.out.println(">> ID đã tồn tại!"); break; }
+                    String name = io.readLine("Tên: ");
+                    int age = io.readInt("Tuổi: ");
+                    double gpa = io.readDouble("GPA: ");
+                    repo.students.put(id, new Student(id, name, age, gpa));
+                    System.out.println(">> Đã thêm.");
+                }
+                case 2 -> {
+                    String id = io.readLine("ID cần xóa: ");
+                    if (repo.students.remove(id) != null) System.out.println(">> Đã xóa.");
+                    else System.out.println(">> Không tìm thấy SV.");
+                }
+                case 3 -> {
+                    String id = io.readLine("ID cần cập nhật: ");
+                    Student s = repo.students.get(id);
+                    if (s == null) { System.out.println(">> Không tìm thấy."); break; }
+                    String name = io.readLine("Tên mới ("+s.name+"): ");
+                    int age = io.readInt("Tuổi mới ("+s.age+"): ");
+                    double gpa = io.readDouble("GPA mới ("+s.gpa+"): ");
+                    repo.students.put(id, new Student(id, name.isEmpty()?s.name:name, age, gpa));
+                    System.out.println(">> Đã cập nhật.");
+                }
+                case 4 -> {
+                    if (repo.students.isEmpty()) { System.out.println("(trống)"); break; }
+                    repo.students.values().forEach(s ->
+                        System.out.println("ID:"+s.id+" | Name:"+s.name+" | Age:"+s.age+" | GPA:"+s.gpa));
+                }
+                case 5 -> {
+                    String kw = io.readLine("Nhập tên (tìm gần đúng): ").toLowerCase();
+                    repo.students.values().stream()
+                        .filter(s -> s.name.toLowerCase().contains(kw))
+                        .forEach(s -> System.out.println("Tìm thấy: "+s.id+" | "+s.name+" | GPA:"+s.gpa));
+                }
+                case 6 -> repo.students.values().stream()
+                        .filter(s -> s.gpa > 8.0)
+                        .forEach(s -> System.out.println("SV giỏi: "+s.id+" | "+s.name+" | "+s.gpa));
+                case 7 -> {
+                    List<Student> sorted = new ArrayList<>(repo.students.values());
+                    sorted.sort(Comparator.comparing(s -> s.name.toLowerCase()));
+                    sorted.forEach(s -> System.out.println(s.id+" | "+s.name+" | "+s.gpa));
+                }
+                case 8 -> {
+                    List<Student> sorted = new ArrayList<>(repo.students.values());
+                    sorted.sort(Comparator.comparingDouble((Student s) -> s.gpa).reversed());
+                    sorted.forEach(s -> System.out.println(s.id+" | "+s.name+" | "+s.gpa));
+                }
+                default -> System.out.println(">> Không hợp lệ!");
+            }
+        }
+    }
+
+    // ======= Teacher Menu =======
+    static void teacherMenu(Repo repo, IO io) {
+        while (true) {
+            System.out.println("\n--- QUẢN LÝ GIÁO VIÊN ---");
+            System.out.println("1. Thêm GV");
+            System.out.println("2. Xóa GV");
+            System.out.println("3. Cập nhật GV");
+            System.out.println("4. Hiển thị GV");
+            System.out.println("9. Quay lại");
+            int c = new IO().readInt("Chọn: ");
+            if (c == 9) return;
+
+            switch (c) {
+                case 1 -> {
+                    String id = io.readLine("ID: ");
+                    if (repo.teachers.containsKey(id)) { System.out.println(">> ID đã tồn tại!"); break; }
+                    String name = io.readLine("Tên: ");
+                    String major = io.readLine("Chuyên môn: ");
+                    repo.teachers.put(id, new Teacher(id, name, major));
+                    System.out.println(">> Đã thêm.");
+                }
+                case 2 -> {
+                    String id = io.readLine("ID cần xóa: ");
+                    System.out.println(repo.teachers.remove(id) != null ? ">> Đã xóa." : ">> Không tìm thấy.");
+                }
+                case 3 -> {
+                    String id = io.readLine("ID cần cập nhật: ");
+                    Teacher t = repo.teachers.get(id);
+                    if (t == null) { System.out.println(">> Không tìm thấy."); break; }
+                    String name = io.readLine("Tên mới ("+t.name+"): ");
+                    String major = io.readLine("Chuyên môn mới ("+t.major+"): ");
+                    repo.teachers.put(id, new Teacher(id, name.isEmpty()?t.name:name, major.isEmpty()?t.major:major));
+                    System.out.println(">> Đã cập nhật.");
+                }
+                case 4 -> repo.teachers.values().forEach(t ->
+                    System.out.println("ID:"+t.id+" | Name:"+t.name+" | Major:"+t.major));
+                default -> System.out.println(">> Không hợp lệ!");
+            }
+        }
+    }
+
+    // ======= Course Menu =======
+    static void courseMenu(Repo repo, IO io) {
+        while (true) {
+            System.out.println("\n--- QUẢN LÝ MÔN HỌC ---");
+            System.out.println("1. Thêm MH");
+            System.out.println("2. Xóa MH");
+            System.out.println("3. Cập nhật MH");
+            System.out.println("4. Hiển thị MH");
+            System.out.println("9. Quay lại");
+            int c = new IO().readInt("Chọn: ");
+            if (c == 9) return;
+
+            switch (c) {
+                case 1 -> {
+                    String id = io.readLine("ID: ");
+                    if (repo.courses.containsKey(id)) { System.out.println(">> ID đã tồn tại!"); break; }
+                    String name = io.readLine("Tên MH: ");
+                    int credits = io.readInt("Tín chỉ: ");
+                    repo.courses.put(id, new Course(id, name, credits));
+                    System.out.println(">> Đã thêm.");
+                }
+                case 2 -> {
+                    String id = io.readLine("ID cần xóa: ");
+                    System.out.println(repo.courses.remove(id) != null ? ">> Đã xóa." : ">> Không tìm thấy.");
+                }
+                case 3 -> {
+                    String id = io.readLine("ID cần cập nhật: ");
+                    Course cobj = repo.courses.get(id);
+                    if (cobj == null) { System.out.println(">> Không tìm thấy."); break; }
+                    String name = io.readLine("Tên mới ("+cobj.name+"): ");
+                    int credits = io.readInt("Tín chỉ mới ("+cobj.credits+"): ");
+                    repo.courses.put(id, new Course(id, name.isEmpty()?cobj.name:name, credits));
+                    System.out.println(">> Đã cập nhật.");
+                }
+                case 4 -> repo.courses.values().forEach(cobj ->
+                    System.out.println("ID:"+cobj.id+" | Name:"+cobj.name+" | TinChi:"+cobj.credits));
+                default -> System.out.println(">> Không hợp lệ!");
+            }
+        }
+    }
+
+    // ======= Enrollment Menu =======
+    static void enrollmentMenu(Repo repo, IO io) {
+        while (true) {
+            System.out.println("\n--- QUẢN LÝ ĐĂNG KÝ HỌC ---");
+            System.out.println("1. Đăng ký môn");
+            System.out.println("2. Hủy đăng ký");
+            System.out.println("3. Xem tất cả");
+            System.out.println("9. Quay lại");
+            int c = new IO().readInt("Chọn: ");
+            if (c == 9) return;
+
+            switch (c) {
+                case 1 -> {
+                    String sid = io.readLine("ID SV: ");
+                    String cid = io.readLine("ID MH: ");
+                    if (!repo.students.containsKey(sid) || !repo.courses.containsKey(cid)) {
+                        System.out.println(">> SV hoặc MH không tồn tại.");
                         break;
                     }
+                    boolean exists = repo.enrollments.stream()
+                            .anyMatch(e -> e.studentId.equals(sid) && e.courseId.equals(cid));
+                    if (exists) { System.out.println(">> Đã đăng ký trước đó."); break; }
+                    repo.enrollments.add(new Enrollment(sid, cid));
+                    System.out.println(">> Đã đăng ký.");
+                }
+                case 2 -> {
+                    String sid = io.readLine("ID SV: ");
+                    String cid = io.readLine("ID MH: ");
+                    boolean removed = repo.enrollments.removeIf(e -> e.studentId.equals(sid) && e.courseId.equals(cid));
+                    System.out.println(removed ? ">> Đã hủy." : ">> Không tìm thấy đăng ký.");
+                }
+                case 3 -> {
+                    if (repo.enrollments.isEmpty()) { System.out.println("(trống)"); break; }
+                    for (Enrollment e : repo.enrollments) {
+                        String sName = Optional.ofNullable(repo.students.get(e.studentId)).map(s -> s.name).orElse("?");
+                        String cName = Optional.ofNullable(repo.courses.get(e.courseId)).map(cobj -> cobj.name).orElse("?");
+                        System.out.println("SV: "+e.studentId+"("+sName+") -> MH: "+e.courseId+"("+cName+")");
+                    }
+                }
+                default -> System.out.println(">> Không hợp lệ!");
             }
+        }
+    }
 
-            if (menu == 1) {
-                // Quản lý sinh viên
-                int smenu = 0;
-                while (smenu != 9) {
-                    System.out.println("--- QUAN LY SINH VIEN ---");
-                    System.out.println("1. Them SV");
-                    System.out.println("2. Xoa SV");
-                    System.out.println("3. Cap nhat SV");
-                    System.out.println("4. Hien thi tat ca SV");
-                    System.out.println("5. Tim SV theo ten");
-                    System.out.println("6. Tim SV GPA > 8");
-                    System.out.println("7. Sap xep theo ten");
-                    System.out.println("8. Sap xep theo GPA");
-                    System.out.println("9. Quay lai");
-                    smenu = sc.nextInt(); sc.nextLine();
+    // ======= Grade Menu =======
+    static void gradeMenu(Repo repo, IO io) {
+        while (true) {
+            System.out.println("\n--- QUẢN LÝ ĐIỂM ---");
+            System.out.println("1. Nhập điểm");
+            System.out.println("2. Cập nhật điểm");
+            System.out.println("3. Hiển thị điểm");
+            System.out.println("9. Quay lại");
+            int c = new IO().readInt("Chọn: ");
+            if (c == 9) return;
 
-                    if (smenu == 1) {
-                        System.out.print("Nhap id: ");
-                        String id = sc.nextLine();
-                        System.out.print("Nhap ten: ");
-                        String name = sc.nextLine();
-                        System.out.print("Nhap tuoi: ");
-                        int age = sc.nextInt(); sc.nextLine();
-                        System.out.print("Nhap GPA: ");
-                        double gpa = sc.nextDouble(); sc.nextLine();
-                        students.add(id + "|" + name + "|" + age + "|" + gpa);
-                    } else if (smenu == 2) {
-                        System.out.print("Nhap id can xoa: ");
-                        String id = sc.nextLine();
-                        for (int i = 0; i < students.size(); i++) {
-                            String[] parts = students.get(i).split("\\|");
-                            if (parts[0].equals(id)) {
-                                students.remove(i);
-                                break;
-                            }
-                        }
-                    } else if (smenu == 3) {
-                        System.out.print("Nhap id can cap nhat: ");
-                        String id = sc.nextLine();
-                        for (int i = 0; i < students.size(); i++) {
-                            String[] parts = students.get(i).split("\\|");
-                            if (parts[0].equals(id)) {
-                                System.out.print("Nhap ten moi: ");
-                                String name = sc.nextLine();
-                                System.out.print("Nhap tuoi moi: ");
-                                int age = sc.nextInt(); sc.nextLine();
-                                System.out.print("Nhap GPA moi: ");
-                                double gpa = sc.nextDouble(); sc.nextLine();
-                                students.set(i, id + "|" + name + "|" + age + "|" + gpa);
-                            }
-                        }
-                    } else if (smenu == 4) {
-                        for (int i = 0; i < students.size(); i++) {
-                            String[] p = students.get(i).split("\\|");
-                            System.out.println("ID:" + p[0] + " Name:" + p[1] + " Age:" + p[2] + " GPA:" + p[3]);
-                        }
-                    } else if (smenu == 5) {
-                        System.out.print("Nhap ten: ");
-                        String name = sc.nextLine();
-                        for (int i = 0; i < students.size(); i++) {
-                            String[] p = students.get(i).split("\\|");
-                            if (p[1].equals(name)) {
-                                System.out.println("Tim thay: " + students.get(i));
-                            }
-                        }
-                    } else if (smenu == 6) {
-                        for (int i = 0; i < students.size(); i++) {
-                            String[] p = students.get(i).split("\\|");
-                            if (Double.parseDouble(p[3]) > 8.0) {
-                                System.out.println("Sinh vien gioi: " + students.get(i));
-                            }
-                        }
-                    } else if (smenu == 7) {
-                        for (int i = 0; i < students.size(); i++) {
-                            for (int j = 0; j < students.size() - 1; j++) {
-                                String[] p1 = students.get(j).split("\\|");
-                                String[] p2 = students.get(j + 1).split("\\|");
-                                if (p1[1].compareTo(p2[1]) > 0) {
-                                    String tmp = students.get(j);
-                                    students.set(j, students.get(j + 1));
-                                    students.set(j + 1, tmp);
-                                }
-                            }
-                        }
-                        System.out.println("Da sap xep theo ten.");
-                    } else if (smenu == 8) {
-                        for (int i = 0; i < students.size(); i++) {
-                            for (int j = 0; j < students.size() - 1; j++) {
-                                String[] p1 = students.get(j).split("\\|");
-                                String[] p2 = students.get(j + 1).split("\\|");
-                                if (Double.parseDouble(p1[3]) < Double.parseDouble(p2[3])) {
-                                    String tmp = students.get(j);
-                                    students.set(j, students.get(j + 1));
-                                    students.set(j + 1, tmp);
-                                }
-                            }
-                        }
-                        System.out.println("Da sap xep theo GPA.");
+            switch (c) {
+                case 1 -> {
+                    String sid = io.readLine("ID SV: ");
+                    String cid = io.readLine("ID MH: ");
+                    if (!repo.students.containsKey(sid) || !repo.courses.containsKey(cid)) {
+                        System.out.println(">> SV hoặc MH không tồn tại.");
+                        break;
+                    }
+                    double score = io.readDouble("Điểm: ");
+                    // nếu đã có thì cập nhật, chưa có thì thêm
+                    Optional<Grade> g = repo.grades.stream()
+                            .filter(x -> x.studentId.equals(sid) && x.courseId.equals(cid))
+                            .findFirst();
+                    if (g.isPresent()) {
+                        g.get().score = score;
+                        System.out.println(">> Đã cập nhật điểm.");
+                    } else {
+                        repo.grades.add(new Grade(sid, cid, score));
+                        System.out.println(">> Đã nhập điểm.");
                     }
                 }
-
-            } else if (menu == 2) {
-                int tmenu = 0;
-                while (tmenu != 9) {
-                    System.out.println("--- QUAN LY GIAO VIEN ---");
-                    System.out.println("1. Them GV");
-                    System.out.println("2. Xoa GV");
-                    System.out.println("3. Cap nhat GV");
-                    System.out.println("4. Hien thi GV");
-                    System.out.println("9. Quay lai");
-                    tmenu = sc.nextInt(); sc.nextLine();
-                    if (tmenu == 1) {
-                        System.out.print("Nhap id GV: ");
-                        String id = sc.nextLine();
-                        System.out.print("Nhap ten GV: ");
-                        String name = sc.nextLine();
-                        System.out.print("Nhap chuyen mon: ");
-                        String major = sc.nextLine();
-                        teachers.add(id + "|" + name + "|" + major);
-                    } else if (tmenu == 2) {
-                        System.out.print("Nhap id GV can xoa: ");
-                        String id = sc.nextLine();
-                        for (int i = 0; i < teachers.size(); i++) {
-                            String[] p = teachers.get(i).split("\\|");
-                            if (p[0].equals(id)) {
-                                teachers.remove(i);
-                                break;
-                            }
-                        }
-                    } else if (tmenu == 3) {
-                        System.out.print("Nhap id GV cap nhat: ");
-                        String id = sc.nextLine();
-                        for (int i = 0; i < teachers.size(); i++) {
-                            String[] p = teachers.get(i).split("\\|");
-                            if (p[0].equals(id)) {
-                                System.out.print("Nhap ten moi: ");
-                                String name = sc.nextLine();
-                                System.out.print("Nhap chuyen mon moi: ");
-                                String major = sc.nextLine();
-                                teachers.set(i, id + "|" + name + "|" + major);
-                            }
-                        }
-                    } else if (tmenu == 4) {
-                        for (int i = 0; i < teachers.size(); i++) {
-                            String[] p = teachers.get(i).split("\\|");
-                            System.out.println("ID:" + p[0] + " Name:" + p[1] + " Major:" + p[2]);
-                        }
+                case 2 -> {
+                    String sid = io.readLine("ID SV: ");
+                    String cid = io.readLine("ID MH: ");
+                    Optional<Grade> g = repo.grades.stream()
+                            .filter(x -> x.studentId.equals(sid) && x.courseId.equals(cid))
+                            .findFirst();
+                    if (g.isEmpty()) { System.out.println(">> Chưa có điểm để cập nhật."); break; }
+                    double score = io.readDouble("Điểm mới: ");
+                    g.get().score = score;
+                    System.out.println(">> Đã cập nhật.");
+                }
+                case 3 -> {
+                    if (repo.grades.isEmpty()) { System.out.println("(trống)"); break; }
+                    for (Grade gr : repo.grades) {
+                        String sName = Optional.ofNullable(repo.students.get(gr.studentId)).map(s -> s.name).orElse("?");
+                        String cName = Optional.ofNullable(repo.courses.get(gr.courseId)).map(cobj -> cobj.name).orElse("?");
+                        System.out.println("SV:"+gr.studentId+"("+sName+") | MH:"+gr.courseId+"("+cName+") | Điểm:"+gr.score);
                     }
                 }
-
-            } else if (menu == 3) {
-                // Quản lý môn học (copy-paste nữa)
-                int cmenu = 0;
-                while (cmenu != 9) {
-                    System.out.println("--- QUAN LY MON HOC ---");
-                    System.out.println("1. Them MH");
-                    System.out.println("2. Xoa MH");
-                    System.out.println("3. Cap nhat MH");
-                    System.out.println("4. Hien thi MH");
-                    System.out.println("9. Quay lai");
-                    cmenu = sc.nextInt(); sc.nextLine();
-                    if (cmenu == 1) {
-                        System.out.print("Nhap id MH: ");
-                        String id = sc.nextLine();
-                        System.out.print("Nhap ten MH: ");
-                        String name = sc.nextLine();
-                        System.out.print("Nhap so tin chi: ");
-                        int tc = sc.nextInt(); sc.nextLine();
-                        courses.add(id + "|" + name + "|" + tc);
-                    } else if (cmenu == 2) {
-                        System.out.print("Nhap id MH can xoa: ");
-                        String id = sc.nextLine();
-                        for (int i = 0; i < courses.size(); i++) {
-                            String[] p = courses.get(i).split("\\|");
-                            if (p[0].equals(id)) {
-                                courses.remove(i);
-                                break;
-                            }
-                        }
-                    } else if (cmenu == 3) {
-                        System.out.print("Nhap id MH cap nhat: ");
-                        String id = sc.nextLine();
-                        for (int i = 0; i < courses.size(); i++) {
-                            String[] p = courses.get(i).split("\\|");
-                            if (p[0].equals(id)) {
-                                System.out.print("Nhap ten moi: ");
-                                String name = sc.nextLine();
-                                System.out.print("Nhap tin chi moi: ");
-                                int tc = sc.nextInt(); sc.nextLine();
-                                courses.set(i, id + "|" + name + "|" + tc);
-                            }
-                        }
-                    } else if (cmenu == 4) {
-                        for (int i = 0; i < courses.size(); i++) {
-                            String[] p = courses.get(i).split("\\|");
-                            System.out.println("ID:" + p[0] + " Name:" + p[1] + " TinChi:" + p[2]);
-                        }
-                    }
-                }
+                default -> System.out.println(">> Không hợp lệ!");
             }
+        }
+    }
 
-            else if (menu == 4) {
-                int emenu = 0;
-                while (emenu != 9) {
-                    System.out.println("--- QUAN LY DANG KY HOC ---");
-                    System.out.println("1. Dang ky mon hoc");
-                    System.out.println("2. Huy dang ky");
-                    System.out.println("3. Xem tat ca dang ky");
-                    System.out.println("9. Quay lai");
-                    emenu = sc.nextInt(); sc.nextLine();
-                    if (emenu == 1) {
-                        System.out.print("Nhap id SV: ");
-                        String sid = sc.nextLine();
-                        System.out.print("Nhap id MH: ");
-                        String cid = sc.nextLine();
-                        enrollments.add(sid + "|" + cid);
-                    } else if (emenu == 2) {
-                        System.out.print("Nhap id SV: ");
-                        String sid = sc.nextLine();
-                        System.out.print("Nhap id MH: ");
-                        String cid = sc.nextLine();
-                        for (int i = 0; i < enrollments.size(); i++) {
-                            String[] p = enrollments.get(i).split("\\|");
-                            if (p[0].equals(sid) && p[1].equals(cid)) {
-                                enrollments.remove(i);
-                                break;
-                            }
-                        }
-                    } else if (emenu == 3) {
-                        for (int i = 0; i < enrollments.size(); i++) {
-                            String[] p = enrollments.get(i).split("\\|");
-                            System.out.println("SV: " + p[0] + " dang ky MH: " + p[1]);
-                        }
-                    }
-                }
+    // ======= Report =======
+    static void report(Repo repo) {
+        System.out.println("\n=== BÁO CÁO TỔNG HỢP ===");
+        if (repo.students.isEmpty()) { System.out.println("(không có SV)"); return; }
+
+        // Gom điểm theo (sid -> (cid -> score))
+        Map<String, Map<String, Double>> scoresByStudent = new HashMap<>();
+        for (Grade g : repo.grades) {
+            scoresByStudent
+                .computeIfAbsent(g.studentId, k -> new HashMap<>())
+                .put(g.courseId, g.score);
+        }
+
+        // Gom đăng ký theo SV
+        Map<String, List<String>> coursesByStudent = repo.enrollments.stream()
+                .collect(Collectors.groupingBy(e -> e.studentId,
+                        Collectors.mapping(e -> e.courseId, Collectors.toList())));
+
+        for (Student s : repo.students.values()) {
+            System.out.println("Sinh viên: " + s.name + " (GPA: " + s.gpa + ")");
+            List<String> enrolled = coursesByStudent.getOrDefault(s.id, Collections.emptyList());
+            if (enrolled.isEmpty()) {
+                System.out.println("  (chưa đăng ký môn)");
+                continue;
             }
-
-            else if (menu == 5) {
-                int gmenu = 0;
-                while (gmenu != 9) {
-                    System.out.println("--- QUAN LY DIEM ---");
-                    System.out.println("1. Nhap diem");
-                    System.out.println("2. Cap nhat diem");
-                    System.out.println("3. Hien thi diem");
-                    System.out.println("9. Quay lai");
-                    gmenu = sc.nextInt(); sc.nextLine();
-                    if (gmenu == 1) {
-                        System.out.print("Nhap id SV: ");
-                        String sid = sc.nextLine();
-                        System.out.print("Nhap id MH: ");
-                        String cid = sc.nextLine();
-                        System.out.print("Nhap diem: ");
-                        double d = sc.nextDouble(); sc.nextLine();
-                        grades.add(sid + "|" + cid + "|" + d);
-                    } else if (gmenu == 2) {
-                        System.out.print("Nhap id SV: ");
-                        String sid = sc.nextLine();
-                        System.out.print("Nhap id MH: ");
-                        String cid = sc.nextLine();
-                        for (int i = 0; i < grades.size(); i++) {
-                            String[] p = grades.get(i).split("\\|");
-                            if (p[0].equals(sid) && p[1].equals(cid)) {
-                                System.out.print("Nhap diem moi: ");
-                                double d = sc.nextDouble(); sc.nextLine();
-                                grades.set(i, sid + "|" + cid + "|" + d);
-                            }
-                        }
-                    } else if (gmenu == 3) {
-                        for (int i = 0; i < grades.size(); i++) {
-                            String[] p = grades.get(i).split("\\|");
-                            System.out.println("SV:" + p[0] + " MH:" + p[1] + " Diem:" + p[2]);
-                        }
-                    }
-                }
-            }
-
-            else if (menu == 6) {
-                System.out.println("=== BAO CAO ===");
-                for (int i = 0; i < students.size(); i++) {
-                    String[] s = students.get(i).split("\\|");
-                    System.out.println("Sinh vien: " + s[1]);
-                    for (int j = 0; j < enrollments.size(); j++) {
-                        String[] e = enrollments.get(j).split("\\|");
-                        if (e[0].equals(s[0])) {
-                            for (int k = 0; k < courses.size(); k++) {
-                                String[] c = courses.get(k).split("\\|");
-                                if (c[0].equals(e[1])) {
-                                    System.out.print(" - Mon hoc: " + c[1]);
-                                    for (int m = 0; m < grades.size(); m++) {
-                                        String[] g = grades.get(m).split("\\|");
-                                        if (g[0].equals(s[0]) && g[1].equals(c[0])) {
-                                            System.out.print(" | Diem: " + g[2]);
-                                        }
-                                    }
-                                    System.out.println();
-                                }
-                            }
-                        }
-                    }
-                }
+            for (String cid : enrolled) {
+                Course c = repo.courses.get(cid);
+                String cname = (c == null) ? cid : c.name;
+                Double sc = Optional.ofNullable(scoresByStudent.get(s.id))
+                        .map(m -> m.get(cid)).orElse(null);
+                System.out.println("  - Môn: " + cname + (sc != null ? " | Điểm: " + sc : " | Điểm: (chưa có)"));
             }
         }
     }
