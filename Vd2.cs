@@ -9,13 +9,13 @@ using System.Collections.Generic;
 using System.Console;
 public class BadSchoolProgram
 {
-    const int QLSinhVien;
-    const int QLGiaoVien;
-    const int QLMonHoc;
-    const int QLDangKyHoc;
-    const int QLDiem;
-    const int BaoCaoTongHop;
-    const int Thoat;
+    const int QLSinhVien = 1;
+    const int QLGiaoVien = 2;
+    const int QLMonHoc =3;
+    const int QLDangKyHoc = 4;
+    const int QLDiem =5;
+    const int BaoCaoTongHop =6;
+    const int Thoat = 99;
 
     public static void Main(string[] args)
     {
