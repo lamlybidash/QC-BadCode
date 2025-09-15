@@ -215,6 +215,6 @@ public class BadSchoolProgram
     }
     public void FilterNameSinhVienF()
     {
-        //Logic from Trieu
+        //Logic from Lam
     }
 }
