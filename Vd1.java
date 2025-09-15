@@ -1,6 +1,6 @@
 import java.util.*;
 import java.util.stream.Collectors;
-
+//clen code
 public class BadSchoolProgram {
 
     // ======= Models =======
