@@ -222,7 +222,11 @@ public class BadSchoolProgram
     }
     public void AllSinhVienF()
     {
-        //Logic
+       foreach (var s in students)
+            {
+                string[] p = s.Split('|');
+                Console.WriteLine("ID:" + p[0] + " Name:" + p[1] + " Age:" + p[2] + " GPA:" + p[3]);
+            }
     }
     public void FilterGPASinhVienF()
     {
