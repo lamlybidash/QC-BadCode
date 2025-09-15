@@ -189,7 +189,17 @@ public class BadSchoolProgram
     }
     public void DelSinhVienF()
     {
-        //Logic
+        Console.Write("Nhap id can xoa: ");
+        string id = Console.ReadLine();
+        for (int i = 0; i < students.Count; i++)
+        {
+            string[] parts = students[i].Split('|');
+            if (parts[0] == id)
+            {
+                students.RemoveAt(i);
+                break;
+            }
+        }
     }
     public void UpdateSinhVienF()
     {
