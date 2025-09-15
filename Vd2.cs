@@ -211,10 +211,10 @@ public class BadSchoolProgram
     }
     public void FilterGPASinhVienF()
     {
-        //Logic
+        //Logic hẹ hẹ
     }
     public void FilterNameSinhVienF()
     {
-        //Logic
+        //Logic from Trieu
     }
 }
