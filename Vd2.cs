@@ -203,7 +203,22 @@ public class BadSchoolProgram
     }
     public void UpdateSinhVienF()
     {
-        //Logic
+        Console.Write("Nhap id can cap nhat: ");
+        string id = Console.ReadLine();
+        for (int i = 0; i < students.Count; i++)
+        {
+            string[] parts = students[i].Split('|');
+            if (parts[0] == id)
+            {
+                Console.Write("Nhap ten moi: ");
+                string name = Console.ReadLine();
+                Console.Write("Nhap tuoi moi: ");
+                int age = int.Parse(Console.ReadLine());
+                Console.Write("Nhap GPA moi: ");
+                double gpa = double.Parse(Console.ReadLine());
+                students[i] = id + "|" + name + "|" + age + "|" + gpa;
+            }
+        }
     }
     public void AllSinhVienF()
     {
