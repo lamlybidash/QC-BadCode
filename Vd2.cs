@@ -230,7 +230,16 @@ public class BadSchoolProgram
     }
     public void FilterGPASinhVienF()
     {
-        //Logic hẹ hẹ
+        Console.Write("Nhap ten: ");
+            string name = Console.ReadLine();
+            foreach (var s in students)
+            {
+                string[] p = s.Split('|');
+                if (p[1] == name)
+                {
+                    Console.WriteLine("Tim thay: " + s);
+                }
+            }
     }
     public void FilterNameSinhVienF()
     {
