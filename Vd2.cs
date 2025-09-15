@@ -8,8 +8,18 @@ using System.Collections.Generic;
 
 public class BadSchoolProgram
 {
+    const int QLSinhVien;
+    const int QLGiaoVien;
+    const int QLMonHoc;
+    const int QLDangKyHoc;
+    const int QLDiem;
+    const int BaoCaoTongHop;
+    const int Thoat;
+
     public static void Main(string[] args)
     {
+        MainOptionF();
+
         List<string> students = new List<string>();
         List<string> teachers = new List<string>();
         List<string> courses = new List<string>();
@@ -169,4 +179,114 @@ public class BadSchoolProgram
             // ... (do code quá dài nên em dừng ở đây, còn lại tương tự bản Java)
         }
     }
+
+    public static void MainOptionF()
+    {
+        //Đổi tên biến dễ nhớ hơn
+        int select = 0;
+        while (select != Thoat)
+        {
+            WriteLine("============= MENU CHINH =============");
+            WriteLine($"{QLSinhVien}. Quan ly Sinh vien");
+            WriteLine($"{QLGiaoVien}. Quan ly Giao vien");
+            WriteLine($"{QLMonHoc}. Quan ly Mon hoc");
+            WriteLine($"{QLDangKyHoc}. Quan ly Dang ky hoc");
+            WriteLine($"{QLDiem}. Quan ly Diem");
+            WriteLine($"{BaoCaoTongHop}. Bao cao tong hop");
+            WriteLine($"{Thoat}. Thoat");
+            Write("Nhap lua chon: ");
+            select = int.Parse(ReadLine());
+            SelectOption(select);
+        }
+    }
+
+    public static void SelectMainOption(int option)
+    {
+        switch (option)
+        {
+            case QLSinhVien:
+                {
+                    QLSinhVienF();
+                    break;
+                }
+
+            case QLGiaoVien:
+                {
+                    //code
+                    break;
+                }
+
+            case QLMonHoc:
+                {
+                    //code
+                    break;
+                }
+            case QLDangKyHoc:
+                {
+                    //code
+                    break;
+                }
+            case QLDiem:
+                {
+                    //code
+                    break;
+                }
+            case BaoCaoTongHop:
+                {
+                    //code
+                    break;
+                }
+            case Thoat:
+                {
+                    //code
+                    break;
+                }
+            default:
+                {
+
+                    break;
+                }
+        }
+    }
+    
+    public void QLSinhVienF()
+    {
+        int smenu = 0;
+        while (smenu != 9)
+        {
+            WriteLine("--- QUAN LY SINH VIEN ---");
+            WriteLine("1. Them SV");
+            WriteLine("2. Xoa SV");
+            WriteLine("3. Cap nhat SV");
+            WriteLine("4. Hien thi tat ca SV");
+            WriteLine("5. Tim SV theo ten");
+            WriteLine("6. Tim SV GPA > 8");
+            WriteLine("7. Sap xep theo ten");
+            WriteLine("8. Sap xep theo GPA");
+            WriteLine("9. Quay lai");
+            smenu = int.Parse(ReadLine());
+            SelectQLSVOption(smenu);
+        }
+    }
+
+    public static void SelectQLSVOption(int option)
+
+    public void AddSinhVienF(Student student)
+    {
+        Student student = new Student();
+        Write("Nhap id: ");
+        string id = ReadLine();
+        student.Id = id;
+        Write("Nhap ten: ");
+        string name = ReadLine();
+        Write("Nhap tuoi: ");
+        int age = int.Parse(ReadLine());
+        Write("Nhap GPA: ");
+        double gpa = double.Parse(ReadLine());
+        students.Add(id + "|" + name + "|" + age + "|" + gpa);
+
+        Students.Add(student);
+    }
+    
+
 }
